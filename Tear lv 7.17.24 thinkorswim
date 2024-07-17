@@ -1,0 +1,40 @@
+# Define key levels and notes for SPX
+def spx_levels = {5675.0, 5664.0, 5650.0, 5645.0, 5632.0, 5625.0, 5609.0, 5595.0, 5600.0, 5585.0, 5578.0, 5580.0};
+def spx_notes = {"", "strong level", "", "quants max", "", "", "", "strong level upper", "strong level lower", "", "quants min upper", "quants min lower"};
+
+# Define key levels and notes for QQQ
+def qqq_levels = {496.7, 495.0, 494.0, 493.0, 492.0, 491.0, 490.0, 487.9, 488.3, 484.0};
+def qqq_notes = {"", "", "quants max", "", "strong level", "", "strong level", "quants min upper", "quants min lower", ""};
+
+# Fetch SPX and SPY prices
+def spx = close("SPX");
+def spy = close("SPY");
+
+# Calculate SPX to SPY conversion ratio
+def conversion_ratio = if IsNaN(spy) then Double.NaN else spx / spy;
+
+# Initialize SPY levels based on SPX levels and conversion ratio
+def spy_levels = fold i = 0 to 11 with l = [] do l + [if !IsNaN(conversion_ratio) then spx_levels[i] / conversion_ratio else Double.NaN];
+
+# Function to plot levels
+declare lower;
+
+plot plotLevels(levels[], notes[], ticker) = fold i = 0 to 11 with l = 0 do l + if !IsNaN(levels[i]) and GetSymbol() == ticker then {
+    plot level = levels[i];
+    AddChartBubble(!IsNaN(close[-1]) and IsNaN(close), levels[i], notes[i], Color.CYAN, yes);
+} else l;
+
+# Plot SPX levels on SPX chart
+if GetSymbol() == "SPX" {
+    plotLevels(spx_levels, spx_notes, "SPX");
+}
+
+# Plot SPY levels on SPY chart
+if GetSymbol() == "SPY" {
+    plotLevels(spy_levels, spx_notes, "SPY");
+}
+
+# Plot QQQ levels on QQQ chart
+if GetSymbol() == "QQQ" {
+    plotLevels(qqq_levels, qqq_notes, "QQQ");
+}
