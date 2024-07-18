@@ -1,0 +1,107 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Shoggophant
+
+//@version=5
+indicator("SPX, QQQ Key Levels and SPY Conversion", overlay=true, max_labels_count=15)
+
+// --- Input colors for lines and labels ---
+line_color = input.color(color.blue, "Line Color")
+label_color = input.color(color.blue, "Label Color")
+label_text_color = input.color(color.white, "Label Text Color")
+
+// --- Number of SPX levels ---
+num_spx_levels = 12
+
+// --- Input key levels and notes for SPX ---
+var float[] spx_levels = array.new_float(num_spx_levels)
+var string[] spx_notes = array.new_string(num_spx_levels)
+
+if bar_index == 0  // Initialize levels and notes only on the first bar
+    array.set(spx_levels, 0, 5661.0)
+    array.set(spx_notes, 0, "")
+    array.set(spx_levels, 1, 5650.0)
+    array.set(spx_notes, 1, "")
+    array.set(spx_levels, 2, 5645.0)
+    array.set(spx_notes, 2, "")
+    array.set(spx_levels, 3, 5635.0)
+    array.set(spx_notes, 3, "Upper")
+    array.set(spx_levels, 4, 5630.0)
+    array.set(spx_notes, 4, "Lower")
+    array.set(spx_levels, 5, 5625.0)
+    array.set(spx_notes, 5, "")
+    array.set(spx_levels, 6, 5610.0)
+    array.set(spx_notes, 6, "")
+    array.set(spx_levels, 7, 5600.0)
+    array.set(spx_notes, 7, "Key Level")
+    array.set(spx_levels, 8, 5577.0)
+    array.set(spx_notes, 8, "")
+    array.set(spx_levels, 9, 5563.0)
+    array.set(spx_notes, 9, "Key Level, hard to break")
+    array.set(spx_levels, 10, 5550.0)
+    array.set(spx_notes, 10, "Quants min, strong level")
+    array.set(spx_levels, 11, 5540.0)
+    array.set(spx_notes, 11, "")
+
+// --- Input key levels and notes for QQQ ---
+var float[] qqq_levels = array.new_float(11)
+var string[] qqq_notes = array.new_string(11)
+
+if bar_index == 0  // Initialize levels and notes only on the first bar
+    array.set(qqq_levels, 0, 496.7)
+    array.set(qqq_notes, 0, "")
+    array.set(qqq_levels, 1, 495.0)
+    array.set(qqq_notes, 1, "")
+    array.set(qqq_levels, 2, 494.0)
+    array.set(qqq_notes, 2, "Quants max")
+    array.set(qqq_levels, 3, 493.0)
+    array.set(qqq_notes, 3, "")
+    array.set(qqq_levels, 4, 492.0)
+    array.set(qqq_notes, 4, "Strong level")
+    array.set(qqq_levels, 5, 491.0)
+    array.set(qqq_notes, 5, "")
+    array.set(qqq_levels, 6, 490.0)
+    array.set(qqq_notes, 6, "Strong level")
+    array.set(qqq_levels, 7, 488.3)
+    array.set(qqq_notes, 7, "Upper")
+    array.set(qqq_levels, 8, 487.9)
+    array.set(qqq_notes, 8, "Lower")
+    array.set(qqq_levels, 9, 487.0)
+    array.set(qqq_notes, 9, "Quants min")
+    array.set(qqq_levels, 10, 484.0)
+    array.set(qqq_notes, 10, "")
+
+// --- Fetch SPX and SPY prices ---
+spx = request.security("SPX", "D", close)
+spy = request.security("SPY", "D", close)
+
+// --- Calculate SPX to SPY conversion ratio ---
+conversion_ratio = na(spy) ? na : spx / spy
+
+// --- Initialize SPY levels based on SPX levels and conversion ratio ---
+var float[] spy_levels = array.new_float(num_spx_levels)
+var string[] spy_notes = array.new_string(num_spx_levels)
+
+if bar_index == 0  // Initialize levels and notes only on the first bar
+    for i = 0 to array.size(spx_levels) - 1
+        spx_level = array.get(spx_levels, i)
+        spy_level = na(conversion_ratio) ? na : spx_level / conversion_ratio
+        array.set(spy_levels, i, spy_level)
+        array.set(spy_notes, i, array.get(spx_notes, i))
+
+// --- Function to plot levels ---
+plotLevels(levels, notes, ticker) =>
+    for i = 0 to array.size(levels) - 1
+        price = array.get(levels, i)
+        comment = array.get(notes, i)
+        if not na(price) and syminfo.ticker == ticker
+            line.new(bar_index - 1, price, bar_index, price, extend=extend.both, color=line_color)
+            label.new(bar_index, price, text=comment, style=label.style_label_left, textalign=text.align_left, size=size.small, color=label_color, textcolor=label_text_color)
+
+// --- Plot SPX levels on SPX chart ---
+plotLevels(spx_levels, spx_notes, "SPX")
+
+// --- Plot SPY levels on SPY chart ---
+plotLevels(spy_levels, spy_notes, "SPY")
+
+// --- Plot QQQ levels on QQQ chart ---
+plotLevels(qqq_levels, qqq_notes, "QQQ")
