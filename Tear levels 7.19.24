@@ -1,0 +1,107 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Shoggophant
+
+//@version=5
+indicator("SPX, QQQ, and SPY Key Levels", overlay=true, max_labels_count=15)
+
+// --- Input colors for lines and labels ---
+line_color = input.color(color.blue, "Line Color")
+label_color = input.color(color.blue, "Label Color")
+label_text_color = input.color(color.white, "Label Text Color")
+
+// --- Input key levels and notes for SPX ---
+var float[] spx_levels = array.new_float(11)
+var string[] spx_notes = array.new_string(11)
+
+if bar_index == 0  // Initialize levels and notes only on the first bar
+    array.set(spx_levels, 0, 5620.0)
+    array.set(spx_notes, 0, "Key Level")
+    array.set(spx_levels, 1, 5600.0)
+    array.set(spx_notes, 1, "Strong Level")
+    array.set(spx_levels, 2, 5585.0)
+    array.set(spx_notes, 2, "Quant's Max")
+    array.set(spx_levels, 3, 5575.0)
+    array.set(spx_notes, 3, "Key Level")
+    array.set(spx_levels, 4, 5565.0)
+    array.set(spx_notes, 4, "Stronger Resistance")
+    array.set(spx_levels, 5, 5550.0)
+    array.set(spx_notes, 5, "Pivot Level")
+    array.set(spx_levels, 6, 5525.0)
+    array.set(spx_notes, 6, "Key Level")
+    array.set(spx_levels, 7, 5518.0)
+    array.set(spx_notes, 7, "Strong Level")
+    array.set(spx_levels, 8, 5500.0)
+    array.set(spx_notes, 8, "Quant's Min")
+    array.set(spx_levels, 9, 5486.0)
+    array.set(spx_notes, 9, "Key Level")
+    array.set(spx_levels, 10, 5467.0)
+    array.set(spx_notes, 10, "Key Level")
+
+// --- Input key levels and notes for QQQ ---
+var float[] qqq_levels = array.new_float(12)
+var string[] qqq_notes = array.new_string(12)
+
+if bar_index == 0  // Initialize levels and notes only on the first bar
+    array.set(qqq_levels, 0, 490.0)
+    array.set(qqq_notes, 0, "Key Level")
+    array.set(qqq_levels, 1, 487.5)
+    array.set(qqq_notes, 1, "Key Level")
+    array.set(qqq_levels, 2, 485.0)
+    array.set(qqq_notes, 2, "Quant's Max")
+    array.set(qqq_levels, 3, 484.0)
+    array.set(qqq_notes, 3, "Strong Level")
+    array.set(qqq_levels, 4, 482.0)
+    array.set(qqq_notes, 4, "Key Level")
+    array.set(qqq_levels, 5, 481.0)
+    array.set(qqq_notes, 5, "Key Level")
+    array.set(qqq_levels, 6, 480.0)
+    array.set(qqq_notes, 6, "Key Level")
+    array.set(qqq_levels, 7, 479.0)
+    array.set(qqq_notes, 7, "Key Level")
+    array.set(qqq_levels, 8, 477.0)
+    array.set(qqq_notes, 8, "Key Level")
+    array.set(qqq_levels, 9, 476.0)
+    array.set(qqq_notes, 9, "Strong Level")
+    array.set(qqq_levels, 10, 475.0)
+    array.set(qqq_notes, 10, "Key Level")
+    array.set(qqq_levels, 11, 474.0)
+    array.set(qqq_notes, 11, "Min")
+
+// --- Fetch last available price ---
+getLastPrice(symbol) =>
+    request.security(symbol, "D", close[1])
+
+// --- Function to plot levels ---
+plotLevels(levels, notes, sym) =>
+    for i = 0 to array.size(levels) - 1
+        price = array.get(levels, i)
+        comment = array.get(notes, i)
+        if not na(price)
+            line.new(bar_index - 1, price, bar_index, price, extend=extend.both, color=line_color)
+            label.new(bar_index, price, text=sym + ": " + comment, style=label.style_label_left, textalign=text.align_left, size=size.small, color=label_color, textcolor=label_text_color)
+
+// --- Fetch SPX and SPY conversion ratio ---
+var float spx_last_price = na(getLastPrice("SPX")) ? close : getLastPrice("SPX")
+var float spy_last_price = na(getLastPrice("SPY")) ? close : getLastPrice("SPY")
+
+conversion_ratio = spx_last_price / spy_last_price
+
+// --- Convert SPX levels to SPY levels using conversion ratio ---
+var float[] spy_levels = array.new_float(11)
+
+for i = 0 to array.size(spx_levels) - 1
+    spx_level = array.get(spx_levels, i)
+    spy_level = spx_level / conversion_ratio
+    array.set(spy_levels, i, spy_level)
+
+// --- Plot SPX levels on SPX chart ---
+if syminfo.ticker == "SPX"
+    plotLevels(spx_levels, spx_notes, "SPX")
+
+// --- Plot QQQ levels on QQQ chart ---
+if syminfo.ticker == "QQQ"
+    plotLevels(qqq_levels, qqq_notes, "QQQ")
+
+// --- Plot SPY levels on SPY chart ---
+if syminfo.ticker == "SPY"
+    plotLevels(spy_levels, spx_notes, "SPY")
