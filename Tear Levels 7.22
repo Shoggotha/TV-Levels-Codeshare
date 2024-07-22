@@ -1,7 +1,7 @@
 // This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
 // © Shoggophant
 //@version=5
-indicator("SPX, QQQ, and SPY Key Levels", overlay=true, max_labels_count=15)
+indicator("SPX, QQQ, VIX Key Levels", overlay=true, max_labels_count=15)
 
 // --- Input colors for lines and labels ---
 line_color = input.color(color.blue, "Line Color")
@@ -13,96 +13,108 @@ var float[] spx_levels = array.new_float(12)
 var string[] spx_notes = array.new_string(12)
 
 if bar_index == 0  // Initialize levels and notes only on the first bar
-    array.set(spx_levels, 0, 5600.0)
-    array.set(spx_notes, 0, "V Strong Level (Upper)")
-    array.set(spx_levels, 1, 5595.0)
-    array.set(spx_notes, 1, "V Strong Level (Lower)")
+    array.set(spx_levels, 0, 5595.0)
+    array.set(spx_notes, 0, "v strong level")
+    array.set(spx_levels, 1, 5600.0)
+    array.set(spx_notes, 1, "v strong level")
     array.set(spx_levels, 2, 5585.0)
     array.set(spx_notes, 2, "")
     array.set(spx_levels, 3, 5577.0)
     array.set(spx_notes, 3, "")
     array.set(spx_levels, 4, 5565.0)
-    array.set(spx_notes, 4, "Quant's Max")
+    array.set(spx_notes, 4, "quants max")
     array.set(spx_levels, 5, 5550.0)
-    array.set(spx_notes, 5, "Strong Resistance")
+    array.set(spx_notes, 5, "strong resistance")
     array.set(spx_levels, 6, 5543.0)
-    array.set(spx_notes, 6, "Key Level")
-    array.set(spx_levels, 7, 5500.0)
-    array.set(spx_notes, 7, "Min (Upper)")
+    array.set(spx_notes, 6, "key level")
+    array.set(spx_levels, 7, 5525.0)
+    array.set(spx_notes, 7, "")
     array.set(spx_levels, 8, 5490.0)
-    array.set(spx_notes, 8, "Min (Lower)")
-    array.set(spx_levels, 9, 5485.0)
-    array.set(spx_notes, 9, "")
-    array.set(spx_levels, 10, 5477.0)
+    array.set(spx_notes, 8, "min")
+    array.set(spx_levels, 9, 5500.0)
+    array.set(spx_notes, 9, "min")
+    array.set(spx_levels, 10, 5485.0)
     array.set(spx_notes, 10, "")
-    array.set(spx_levels, 11, 5525.0)
-    array.set(spx_notes, 10, "")
+    array.set(spx_levels, 11, 5477.0)
+    array.set(spx_notes, 11, "")
 
 // --- Input key levels and notes for QQQ ---
-var float[] qqq_levels = array.new_float(12)
-var string[] qqq_notes = array.new_string(12)
+var float[] qqq_levels = array.new_float(10)
+var string[] qqq_notes = array.new_string(10)
 
 if bar_index == 0  // Initialize levels and notes only on the first bar
-    array.set(qqq_levels, 0, 490.0)
-    array.set(qqq_notes, 0, "Key Level")
-    array.set(qqq_levels, 1, 487.5)
-    array.set(qqq_notes, 1, "Key Level")
-    array.set(qqq_levels, 2, 485.0)
-    array.set(qqq_notes, 2, "Quant's Max")
-    array.set(qqq_levels, 3, 484.0)
-    array.set(qqq_notes, 3, "Strong Level")
-    array.set(qqq_levels, 4, 482.0)
-    array.set(qqq_notes, 4, "Key Level")
-    array.set(qqq_levels, 5, 481.0)
-    array.set(qqq_notes, 5, "Key Level")
-    array.set(qqq_levels, 6, 480.0)
-    array.set(qqq_notes, 6, "Key Level")
-    array.set(qqq_levels, 7, 479.0)
-    array.set(qqq_notes, 7, "Key Level")
-    array.set(qqq_levels, 8, 477.0)
-    array.set(qqq_notes, 8, "Key Level")
-    array.set(qqq_levels, 9, 476.0)
-    array.set(qqq_notes, 9, "Strong Level")
-    array.set(qqq_levels, 10, 475.0)
-    array.set(qqq_notes, 10, "Key Level")
-    array.set(qqq_levels, 11, 474.0)
-    array.set(qqq_notes, 11, "Min")
+    array.set(qqq_levels, 0, 486.5)
+    array.set(qqq_notes, 0, "corresponds to 20k level")
+    array.set(qqq_levels, 1, 484.7)
+    array.set(qqq_notes, 1, "")
+    array.set(qqq_levels, 2, 483.3)
+    array.set(qqq_notes, 2, "quants max")
+    array.set(qqq_levels, 3, 481.7)
+    array.set(qqq_notes, 3, "")
+    array.set(qqq_levels, 4, 481.0)
+    array.set(qqq_notes, 4, "stronger resistance")
+    array.set(qqq_levels, 5, 480.0)
+    array.set(qqq_notes, 5, "key level")
+    array.set(qqq_levels, 6, 477.0)
+    array.set(qqq_notes, 6, "")
+    array.set(qqq_levels, 7, 475.0)
+    array.set(qqq_notes, 7, "")
+    array.set(qqq_levels, 8, 474.0)
+    array.set(qqq_notes, 8, "min")
+    array.set(qqq_levels, 9, 473.0)
+    array.set(qqq_notes, 9, "")
 
-// --- Fetch last available price ---
-getLastPrice(symbol) =>
-    request.security(symbol, "D", close[1])
+// --- Input key levels and notes for VIX ---
+var float[] vix_levels = array.new_float(3)
+var string[] vix_notes = array.new_string(3)
+
+if bar_index == 0  // Initialize levels and notes only on the first bar
+    array.set(vix_levels, 0, 17.0)
+    array.set(vix_notes, 0, "receded from in premarket")
+    array.set(vix_levels, 1, 16.0)
+    array.set(vix_notes, 1, "")
+    array.set(vix_levels, 2, 15.0)
+    array.set(vix_notes, 2, "strong level hard to break")
+
+// --- Fetch SPX and SPY closing prices ---
+var float spx_close = na
+var float spy_close = na
+
+spx_close := request.security("SPX", "D", close)
+spy_close := request.security("SPY", "D", close)
+
+// Calculate the conversion ratio using the last closing prices
+conversion_ratio = na(spy_close) ? na : spx_close / spy_close
 
 // --- Function to plot levels ---
-plotLevels(levels, notes, sym) =>
+plotLevels(levels, notes) =>
     for i = 0 to array.size(levels) - 1
         price = array.get(levels, i)
         comment = array.get(notes, i)
         if not na(price)
             line.new(bar_index - 1, price, bar_index, price, extend=extend.both, color=line_color)
-            label.new(bar_index, price, text=sym + ": " + comment, style=label.style_label_left, textalign=text.align_left, size=size.small, color=label_color, textcolor=label_text_color)
-
-// --- Fetch SPX and SPY conversion ratio ---
-var float spx_last_price = na(getLastPrice("SPX")) ? close : getLastPrice("SPX")
-var float spy_last_price = na(getLastPrice("SPY")) ? close : getLastPrice("SPY")
-
-conversion_ratio = spx_last_price / spy_last_price
-
-// --- Convert SPX levels to SPY levels using conversion ratio ---
-var float[] spy_levels = array.new_float(array.size(spx_levels))
-
-for i = 0 to array.size(spx_levels) - 1
-    spx_level = array.get(spx_levels, i)
-    spy_level = spx_level / conversion_ratio
-    array.set(spy_levels, i, spy_level)
+            label.new(bar_index, price, text=comment, style=label.style_label_left, textalign=text.align_left, size=size.small, color=label_color, textcolor=label_text_color)
 
 // --- Plot SPX levels on SPX chart ---
 if syminfo.ticker == "SPX"
-    plotLevels(spx_levels, spx_notes, "SPX")
+    plotLevels(spx_levels, spx_notes)
 
-// --- Plot QQQ levels on QQQ chart ---
-if syminfo.ticker == "QQQ"
-    plotLevels(qqq_levels, qqq_notes, "QQQ")
+// --- Calculate SPY levels based on SPX levels ---
+var float[] levels_SPY = array.new_float(array.size(spx_levels))
+
+for i = 0 to array.size(spx_levels) - 1
+    spx_level = array.get(spx_levels, i)
+    spy_level = na(conversion_ratio) ? na : spx_level / conversion_ratio
+    array.set(levels_SPY, i, spy_level)
 
 // --- Plot SPY levels on SPY chart ---
 if syminfo.ticker == "SPY"
-    plotLevels(spy_levels, spx_notes, "SPY")
+    plotLevels(levels_SPY, spx_notes)
+
+// --- Plot QQQ levels on QQQ chart ---
+if syminfo.ticker == "QQQ"
+    plotLevels(qqq_levels, qqq_notes)
+
+// --- Plot VIX levels on VIX chart ---
+if syminfo.ticker == "VIX"
+    plotLevels(vix_levels, vix_notes)
